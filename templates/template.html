@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+<head>
+	<title>{% block title %}{% end %}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- bootstrap -->
+	<link href="{{ static_url("css/bootstrap.min.css") }}" rel="stylesheet" media="screen">
+	<link href="{{ static_url("css/template.css") }}" rel="stylesheet" media="screen">
+	<!-- web font -->
+	<link href='http://fonts.googleapis.com/css?family=Share' rel='stylesheet' type='text/css'>
+	<!-- js -->
+	<script type="text/javascript" src="{{ static_url("js/jquery-2.0.3.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url("js/bootstrap.js") }}"></script>
+<style>
+h1, h2, h3, div {
+	font-family: 'Share', cursive;
+}
+</style>
+</head>
+<body>
+<header>
+<div class="page-header">
+	<h3>{% block title %}{% end %}</h3>
+</div>
+</header>
+
+<article>
+{% block article %}{% end %}
+</article>
+
+<footer></footer>
+
+{% block scripts %}{% end %}
+</body>
+</html>

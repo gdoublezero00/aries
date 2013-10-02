@@ -1,0 +1,92 @@
+{% extends "template.html" %}
+{% block title %}{{ title }}{% end %}
+{% block article %}
+<div class="col-md-12">
+<form class="form-inline" id="form-message" role="form">
+	<div class="input-group">
+		<input type="text" class="form-control" id="message" placeholder="message.">
+		<span class="input-group-btn">
+			<button type="button" class="btn" id="send">送信</button>
+		</span>
+	</div>
+</form>
+<div class="alert" id="status" style="height: 24px; padding: 0px 5px 0px 5px; margin: 5px 0px 5px 0px;">
+</div>
+
+<div id="contents">
+{% for log in logs %}<div class="">[{{ log[1] }}] {{ log[2] }}</div>{% end %}
+</div>
+</div>
+{% end %}
+
+{% block scripts %}
+<script type="text/javascript">
+$(function () {
+	var ws = new WebSocket('ws:192.168.1.20:11111/wsChat')
+	var session = window.sessionStorage['clientid'];
+	
+	ws.onopen = function() {
+		onSend('open', window.sessionStorage['clientid']);
+		stateChange(1);
+	}
+	ws.onclose = function() {
+		stateChange(2);
+	}
+	
+	ws.onmessage = function(e) {
+		var elm = $('<div />', {css:{display:'none'}});
+		json = JSON.parse(e.data);
+		if (json['state'] == 1) {
+			window.sessionStorage['clientid'] = json['id'];
+			$('#status').html(json['clients'] + ' clients connected. [ ID: ' + json['id'] + ' ]');
+		} else if (json['state'] == 2) {
+			elm.html(elm.html() + "<div>[" + json['id'] + "] " + json['message'] + "</div>");
+			$('#contents').prepend(elm);
+			elm.animate({height:'show', opacity:'show'}, 'normal');
+		} else if (json['state'] == 3) {
+		
+		}
+	}
+
+	$('#send').bind({
+		click: function() {
+			onSend('message', $('#message').val());
+			$('#message').val('')
+		}
+	});
+	
+	$('#form-message').keypress(function(e) {
+		if ((e.which && e.which === 13) && (e.keyCode && e.keyCode === 13)) {
+			onSend('message', $('#message').val());
+			$('#message').val('')
+			return false;
+		} else {
+			return true;
+		}
+	});
+	
+	function stateChange(state) {
+		switch (state) {
+		case 1:
+			$('#status').addClass('alert-success');
+			$('#status').removeClass('alert-danger');
+			$('#status').html('Connected.');
+			break;
+		case 2:
+			$('#status').addClass('alert-danger');
+			$('#status').removeClass('alert-success');
+			$('#status').html('Connection Closed.');
+			break;
+		default:
+			break;
+		}
+	}
+	
+	function onSend(state, message) {
+		if (state === '' || message === '') return;
+		var bucket = {state:state, value:message};
+		ws.send(JSON.stringify(bucket));
+	}
+});
+</script>
+{% end %}
